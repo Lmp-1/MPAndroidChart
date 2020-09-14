@@ -26,6 +26,9 @@ public class LimitLine extends ComponentBase {
     /** the color of the limit line */
     private int mLineColor = Color.rgb(237, 91, 91);
 
+    /** the color of the text. If null, mLineColor will be used */
+    private Integer mTextColor = null;
+
     /** the style of the label text */
     private Paint.Style mTextStyle = Paint.Style.FILL_AND_STROKE;
 
@@ -40,7 +43,7 @@ public class LimitLine extends ComponentBase {
 
     /** enum that indicates the position of the LimitLine label */
     public enum LimitLabelPosition {
-        LEFT_TOP, LEFT_BOTTOM, RIGHT_TOP, RIGHT_BOTTOM
+        LEFT_TOP, LEFT_BOTTOM, LEFT_MIDDLE, RIGHT_TOP, RIGHT_BOTTOM, RIGHT_MIDDLE
     }
 
     /**
@@ -72,6 +75,15 @@ public class LimitLine extends ComponentBase {
      */
     public float getLimit() {
         return mLimit;
+    }
+
+    /**
+     * Sets new limit to the LimitLine.
+     *
+     * @param newLimit
+     */
+    public void setLimit(float newLimit) {
+        mLimit = newLimit;
     }
 
     /**
@@ -211,5 +223,24 @@ public class LimitLine extends ComponentBase {
      */
     public String getLabel() {
         return mLabel;
+    }
+
+    /**
+     * Sets the label text color that is drawn next to the limit line. Provide null if
+     * line color should be used.
+     *
+     * @param color
+     */
+    public void setTextColor(int color) {
+        mTextColor = color;
+    }
+
+    /**
+     * Returns the label text color that is drawn next to the limit line.
+     *
+     * @return
+     */
+    public int getTextColor() {
+        return mTextColor != null ? mTextColor : mLineColor;
     }
 }

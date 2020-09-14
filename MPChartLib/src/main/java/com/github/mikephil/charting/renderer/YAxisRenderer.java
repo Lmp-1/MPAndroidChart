@@ -11,6 +11,7 @@ import com.github.mikephil.charting.components.LimitLine;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.components.YAxis.AxisDependency;
 import com.github.mikephil.charting.components.YAxis.YAxisLabelPosition;
+import com.github.mikephil.charting.utils.FSize;
 import com.github.mikephil.charting.utils.MPPointD;
 import com.github.mikephil.charting.utils.Transformer;
 import com.github.mikephil.charting.utils.Utils;
@@ -264,6 +265,7 @@ public class YAxisRenderer extends AxisRenderer {
         if (limitLines == null || limitLines.size() <= 0)
             return;
 
+        float offset4dp = Utils.convertDpToPixel(4f);
         float[] pts = mRenderLimitLinesBuffer;
         pts[0] = 0;
         pts[1] = 0;
@@ -291,7 +293,13 @@ public class YAxisRenderer extends AxisRenderer {
 
             mTrans.pointValuesToPixel(pts);
 
-            limitLinePath.moveTo(mViewPortHandler.contentLeft(), pts[1]);
+            float limitLineStartPoint = mViewPortHandler.contentLeft();
+            if (l.getLabelPosition() == LimitLine.LimitLabelPosition.LEFT_MIDDLE) {
+                // in this case we create a small offset because we will have a background under
+                // the label and this way it will look better
+                limitLineStartPoint += offset4dp;
+            }
+            limitLinePath.moveTo(limitLineStartPoint, pts[1]);
             limitLinePath.lineTo(mViewPortHandler.contentRight(), pts[1]);
 
             c.drawPath(limitLinePath, mLimitLinePaint);
@@ -310,8 +318,9 @@ public class YAxisRenderer extends AxisRenderer {
                 mLimitLinePaint.setStrokeWidth(0.5f);
                 mLimitLinePaint.setTextSize(l.getTextSize());
 
-                final float labelLineHeight = Utils.calcTextHeight(mLimitLinePaint, label);
-                float xOffset = Utils.convertDpToPixel(4f) + l.getXOffset();
+                FSize textSize = Utils.calcTextSize(mLimitLinePaint, label);
+                final float labelLineHeight = textSize.height;
+                float xOffset = offset4dp + l.getXOffset();
                 float yOffset = l.getLineWidth() + labelLineHeight + l.getYOffset();
 
                 final LimitLine.LimitLabelPosition position = l.getLabelPosition();
@@ -336,6 +345,26 @@ public class YAxisRenderer extends AxisRenderer {
                     c.drawText(label,
                             mViewPortHandler.contentLeft() + xOffset,
                             pts[1] - yOffset + labelLineHeight, mLimitLinePaint);
+
+                } else if (position == LimitLine.LimitLabelPosition.LEFT_MIDDLE) {
+                    // If text is drawn over the LimitLine, it should have a background
+                    mLimitLinePaint.setColor(l.getLineColor());
+                    float textWidth = textSize.width;
+                    RectF bg = new RectF(mViewPortHandler.contentLeft() + offset4dp,
+                            pts[1] + labelLineHeight,
+                            mViewPortHandler.contentLeft() + offset4dp * 2f + xOffset * 2f + textWidth,
+                            pts[1] - labelLineHeight);
+
+                    c.drawRoundRect(bg,
+                            labelLineHeight,
+                            labelLineHeight,
+                            mLimitLinePaint);
+
+                    mLimitLinePaint.setColor(l.getTextColor());
+                    mLimitLinePaint.setTextAlign(Align.LEFT);
+                    c.drawText(label,
+                            mViewPortHandler.contentLeft() + offset4dp + xOffset,
+                            pts[1] + labelLineHeight / 2f, mLimitLinePaint);
 
                 } else {
 
